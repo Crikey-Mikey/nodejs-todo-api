@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcryptjs');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
@@ -12,7 +13,7 @@ app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
-// GET
+// TODO
 app.get('/todos', function(req, res) {
 	var query = req.query;
 	var where = {};
@@ -38,7 +39,7 @@ app.get('/todos', function(req, res) {
 	});
 });
 
-// GET
+
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
@@ -53,7 +54,7 @@ app.get('/todos/:id', function(req, res) {
 	});
 });
 
-// POST
+
 app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
@@ -64,7 +65,7 @@ app.post('/todos', function(req, res) {
 	});
 });
 
-// DELETE 
+
 app.delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
@@ -85,7 +86,7 @@ app.delete('/todos/:id', function(req, res) {
 	});
 });
 
-// PUT
+
 app.put('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
@@ -115,6 +116,8 @@ app.put('/todos/:id', function(req, res) {
 
 });
 
+// USERS
+
 app.post('/users', function(req, res) {
 	var body = _.pick(req.body, 'email', 'password');
 	db.user.create(body).then(function(user) {
@@ -125,7 +128,17 @@ app.post('/users', function(req, res) {
 
 });
 
-db.sequelize.sync().then(function() {
+app.post('/users/login', function(req, res) {
+	var body = _.pick(req.body, 'email', 'password');
+
+	db.user.authenticate(body).then(function(user) {
+		res.json(user.toPublicJSON);
+	}, function() {
+		res.status(401).send();
+	});	
+});
+
+db.sequelize.sync({force: true}).then(function() {
 	app.listen(PORT, function() {
 		console.log('Express listening on port ' + PORT + '!');
 	});
