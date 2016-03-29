@@ -23,7 +23,6 @@ app.get('/todos', function(req, res) {
 		where.completed = false;
 	}
 
-
 	if (query.hasOwnProperty('q') && query.q.length > 0) {
 		where.description = {
 			$like: '%' + query.q + '%'
@@ -119,7 +118,7 @@ app.put('/todos/:id', function(req, res) {
 app.post('/users', function(req, res) {
 	var body = _.pick(req.body, 'email', 'password');
 	db.user.create(body).then(function(user) {
-		res.json(user.toJSON());
+		res.json(user.toPublicJSON());
 	}, function(e) {
 		res.status(400).json(e);
 	});
