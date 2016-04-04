@@ -14,7 +14,7 @@ app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
-// TODO
+// GET /todos/
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	var query = req.query;
 	var where = {};
@@ -40,7 +40,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-
+// GET /todos/:id
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
@@ -55,18 +55,22 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	});
 });
 
-
+// POST /todos
 app.post('/todos', middleware.requireAuthentication, function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
-	db.todo.create(body).then(function(todo) {
-		res.json(todo.toJSON());
+	db.todo.create(body).then(function(todo) {		
+		req.user.addTodo(todo).then(function(){
+			return todo.reload();
+		}).then(function() {
+			res.json(todo.toJSON());
+		});
 	}, function(e) {
 		res.status(400).json(e);
 	});
 });
 
-
+// DELETE /todos/:id
 app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
